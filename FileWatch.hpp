@@ -59,6 +59,7 @@
 #include <type_traits>
 #include <future>
 #include <regex>
+#include <filesystem>
 
 namespace filewatch {
 	enum class Event {
@@ -358,7 +359,11 @@ namespace filewatch {
 					FILE_NOTIFY_INFORMATION *file_information = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&buffer[0]);
 					do
 					{
-						UnderpinningString changed_file{ file_information->FileName, file_information->FileNameLength / 2 };
+
+            char ch[1024];
+            char DefChar = ' ';
+            WideCharToMultiByte(CP_ACP,0,file_information->FileName,-1, ch,1024,&DefChar, NULL);
+						UnderpinningString changed_file{ ch, file_information->FileNameLength / 2 };
 						if (pass_filter(changed_file))
 						{
 							parsed_information.emplace_back(T{ changed_file }, _event_type_mapping.at(file_information->Action));
